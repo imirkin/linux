@@ -1,6 +1,7 @@
 #ifndef __NVKM_FB_RAM_PRIV_H__
 #define __NVKM_FB_RAM_PRIV_H__
 #include "priv.h"
+#include <subdev/bios/M0209.h>
 
 int  nvkm_ram_ctor(const struct nvkm_ram_func *, struct nvkm_fb *,
 		   enum nvkm_ram_type, u64 size, u32 tags,
@@ -23,6 +24,22 @@ int  gf100_ram_ctor(const struct nvkm_ram_func *, struct nvkm_fb *,
 		    u32, struct nvkm_ram *);
 int  gf100_ram_get(struct nvkm_ram *, u64, u32, u32, u32, struct nvkm_mem **);
 void gf100_ram_put(struct nvkm_ram *, struct nvkm_mem **);
+
+/* Training */
+struct gt215_ram_train {
+	u16 mask;
+	struct nvbios_M0209S remap;
+	struct nvbios_M0209S type00;
+	struct nvbios_M0209S type01;
+	struct nvbios_M0209S type04;
+	struct nvbios_M0209S type06;
+	struct nvbios_M0209S type07;
+	struct nvbios_M0209S type08;
+	struct nvbios_M0209S type09;
+};
+int gt215_ram_train_type(struct nvkm_ram *ram, int i, u8 ramcfg,
+		     struct gt215_ram_train *train);
+int  gf100_ram_train_init(struct nvkm_ram *ram);
 
 int  gk104_ram_ctor(struct nvkm_fb *, struct nvkm_ram **, u32);
 int  gk104_ram_init(struct nvkm_ram *ram);
