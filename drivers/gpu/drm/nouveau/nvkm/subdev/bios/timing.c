@@ -100,14 +100,14 @@ nvbios_timingEp(struct nvkm_bios *bios, int idx,
 		p->timing_10_RCDRD = nvbios_rd08(bios, data + 0x0a);
 		p->timing_10_RCDWR = nvbios_rd08(bios, data + 0x0b);
 		p->timing_10_RRD   = nvbios_rd08(bios, data + 0x0c);
-		p->timing_10_13    = nvbios_rd08(bios, data + 0x0d);
+		p->timing_10_XPDLL = nvbios_rd08(bios, data + 0x0d);
 		p->timing_10_ODT   = nvbios_rd08(bios, data + 0x0e) & 0x07;
 		if (p->ramcfg_ver >= 0x10)
 			p->ramcfg_RON = nvbios_rd08(bios, data + 0x0e) & 0x07;
 
 		p->timing_10_24  = 0xff;
-		p->timing_10_21  = 0;
-		p->timing_10_20  = 0;
+		p->timing_10_CKE = 0;
+		p->timing_10_FAW = 0;
 		p->timing_10_CWL = 0;
 		p->timing_10_18  = 0;
 		p->timing_10_16  = 0;
@@ -118,9 +118,9 @@ nvbios_timingEp(struct nvkm_bios *bios, int idx,
 		case 24:
 		case 23:
 		case 22:
-			p->timing_10_21  = nvbios_rd08(bios, data + 0x15);
+			p->timing_10_CKE = nvbios_rd08(bios, data + 0x15);
 		case 21:
-			p->timing_10_20  = nvbios_rd08(bios, data + 0x14);
+			p->timing_10_FAW = nvbios_rd08(bios, data + 0x14);
 		case 20:
 			p->timing_10_CWL = nvbios_rd08(bios, data + 0x13);
 		case 19:
