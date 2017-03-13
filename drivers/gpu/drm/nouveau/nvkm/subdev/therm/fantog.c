@@ -45,7 +45,8 @@ nvkm_fantog_update(struct nvkm_fantog *fan, int percent)
 	unsigned long flags;
 	int duty;
 
-	spin_lock_irqsave(&fan->lock, flags);
+	if (WARN_ON(!spin_trylock_irqsave(&fan->lock, flags)))
+		return;
 	if (percent < 0)
 		percent = fan->percent;
 	fan->percent = percent;
