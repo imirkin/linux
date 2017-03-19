@@ -65,9 +65,26 @@ nv40_mpeg_mthd_dma(struct nvkm_device *device, u32 mthd, u32 data)
 	return true;
 }
 
+static void
+nv40_mpeg_intr(struct nvkm_engine *engine)
+{
+	struct nv31_mpeg *mpeg = nv31_mpeg(engine);
+	struct nvkm_subdev *subdev = &mpeg->engine.subdev;
+	struct nvkm_device *device = subdev->device;
+	u32 stat;
+
+	nv31_mpeg_intr(engine);
+
+	if ((stat = nvkm_rd32(device, 0x00b800))) {
+		nvkm_error(subdev, "MSRCH 0x%08x\n", stat);
+		nvkm_wr32(device, 0x00b800, stat);
+	}
+}
+
 static const struct nv31_mpeg_func
 nv40_mpeg = {
 	.mthd_dma = nv40_mpeg_mthd_dma,
+	.intr = nv40_mpeg_intr,
 };
 
 int

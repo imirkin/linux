@@ -4,6 +4,7 @@
 struct nvkm_fifo_chan;
 
 int nv31_mpeg_init(struct nvkm_engine *);
+void nv31_mpeg_intr(struct nvkm_engine *);
 void nv31_mpeg_tile(struct nvkm_engine *, int, struct nvkm_fb_tile *);
 extern const struct nvkm_object_func nv31_mpeg_object;
 

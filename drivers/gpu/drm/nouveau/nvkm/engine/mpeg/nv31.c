@@ -175,7 +175,7 @@ nv31_mpeg_mthd(struct nv31_mpeg *mpeg, u32 mthd, u32 data)
 	return false;
 }
 
-static void
+void
 nv31_mpeg_intr(struct nvkm_engine *engine)
 {
 	struct nv31_mpeg *mpeg = nv31_mpeg(engine);
@@ -254,11 +254,19 @@ nv31_mpeg_dtor(struct nvkm_engine *engine)
 	return nv31_mpeg(engine);
 }
 
+static void
+nv31_mpeg_intr_func(struct nvkm_engine *engine)
+{
+	struct nv31_mpeg *mpeg = nv31_mpeg(engine);
+
+	mpeg->func->intr(engine);
+}
+
 static const struct nvkm_engine_func
 nv31_mpeg_ = {
 	.dtor = nv31_mpeg_dtor,
 	.init = nv31_mpeg_init,
-	.intr = nv31_mpeg_intr,
+	.intr = nv31_mpeg_intr_func,
 	.tile = nv31_mpeg_tile,
 	.fifo.cclass = nv31_mpeg_chan_new,
 	.sclass = {
@@ -285,6 +293,7 @@ nv31_mpeg_new_(const struct nv31_mpeg_func *func, struct nvkm_device *device,
 static const struct nv31_mpeg_func
 nv31_mpeg = {
 	.mthd_dma = nv31_mpeg_mthd_dma,
+	.intr = nv31_mpeg_intr,
 };
 
 int

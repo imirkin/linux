@@ -188,6 +188,11 @@ nv44_mpeg_intr(struct nvkm_engine *engine)
 	}
 
 	spin_unlock_irqrestore(&mpeg->engine.lock, flags);
+
+	if ((stat = nvkm_rd32(device, 0x00b800))) {
+		nvkm_error(subdev, "MSRCH 0x%08x\n", stat);
+		nvkm_wr32(device, 0x00b800, stat);
+	}
 }
 
 static const struct nvkm_engine_func
