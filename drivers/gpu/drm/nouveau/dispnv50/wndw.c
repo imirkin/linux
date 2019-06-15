@@ -412,6 +412,7 @@ nv50_wndw_atomic_check(struct drm_plane *plane, struct drm_plane_state *state)
 	if (armw->visible) {
 		nv50_wndw_atomic_check_release(wndw, asyw, harm);
 		harm->wndw.mask &= ~BIT(wndw->id);
+		harm->wndw.olut &= ~BIT(wndw->id);
 	} else {
 		return 0;
 	}
