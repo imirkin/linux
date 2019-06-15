@@ -343,6 +343,20 @@ nouveau_conn_attach_properties(struct drm_connector *connector)
 		}
 		break;
 	}
+
+	/* HDMI properties. Expose on DP as well? */
+	if (connector->connector_type == DRM_MODE_CONNECTOR_HDMIA ||
+	    connector->connector_type == DRM_MODE_CONNECTOR_DisplayPort) {
+		drm_connector_attach_content_type_property(connector);
+		if (!drm_mode_create_aspect_ratio_property(connector->dev))
+			drm_object_attach_property(&connector->base,
+						   dev->mode_config.
+						   aspect_ratio_property,
+						   DRM_MODE_PICTURE_ASPECT_NONE);
+		if (!drm_mode_create_colorspace_property(connector))
+			drm_object_attach_property(&connector->base,
+						   connector->colorspace_property, 0);
+	}
 }
 
 MODULE_PARM_DESC(tv_disable, "Disable TV-out detection");

@@ -340,6 +340,17 @@ nv50_outp_atomic_check_view(struct drm_encoder *encoder,
 		crtc_state->mode_changed = true;
 	}
 
+	/* This is skipped if there is no native mode, but the
+	 * combination of such a feature being effective and there not
+	 * being a native mode is unlikely.
+	 */
+	if (adjusted_mode->picture_aspect_ratio !=
+	    conn_state->picture_aspect_ratio) {
+		adjusted_mode->picture_aspect_ratio =
+			conn_state->picture_aspect_ratio;
+		crtc_state->mode_changed = true;
+	}
+
 	return 0;
 }
 
@@ -557,6 +568,7 @@ nv50_hdmi_enable(struct drm_encoder *encoder, struct drm_display_mode *mode)
 		.pwr.rekey = 56, /* binary driver, and tegra, constant */
 	};
 	struct nouveau_connector *nv_connector;
+	struct drm_connector_state *conn_state;
 	struct drm_hdmi_info *hdmi;
 	u32 max_ac_packet;
 	union hdmi_infoframe avi_frame;
@@ -567,6 +579,7 @@ nv50_hdmi_enable(struct drm_encoder *encoder, struct drm_display_mode *mode)
 	int size;
 
 	nv_connector = nouveau_encoder_connector_get(nv_encoder);
+	conn_state = nv_connector->base.state;
 	if (!drm_detect_hdmi_monitor(nv_connector->edid))
 		return;
 
@@ -574,6 +587,8 @@ nv50_hdmi_enable(struct drm_encoder *encoder, struct drm_display_mode *mode)
 
 	ret = drm_hdmi_avi_infoframe_from_display_mode(&avi_frame.avi,
 						       &nv_connector->base, mode);
+	drm_hdmi_avi_infoframe_colorspace(&avi_frame.avi, conn_state);
+	drm_hdmi_avi_infoframe_content_type(&avi_frame.avi, conn_state);
 	if (!ret) {
 		/* We have an AVI InfoFrame, populate it to the display */
 		args.pwr.avi_infoframe_length
