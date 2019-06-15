@@ -272,7 +272,7 @@ head507d_olut_load(struct drm_color_lut *in, int size, void __iomem *mem)
 }
 
 void
-head507d_olut(struct nv50_head *head, struct nv50_head_atom *asyh)
+head507d_olut(struct nv50_head *head, struct nv50_head_atom *asyh, int size)
 {
 	if (asyh->base.cpp == 1)
 		asyh->olut.mode = 0;
@@ -280,6 +280,12 @@ head507d_olut(struct nv50_head *head, struct nv50_head_atom *asyh)
 		asyh->olut.mode = 1;
 
 	asyh->olut.load = head507d_olut_load;
+}
+
+bool
+head507d_lut_chk(int size)
+{
+	return size == 0 || size == 256;
 }
 
 void
@@ -330,6 +336,8 @@ head507d = {
 	.olut = head507d_olut,
 	.olut_set = head507d_olut_set,
 	.olut_clr = head507d_olut_clr,
+	.lut_size = 256,
+	.lut_chk  = head507d_lut_chk,
 	.core_calc = head507d_core_calc,
 	.core_set = head507d_core_set,
 	.core_clr = head507d_core_clr,

@@ -36,7 +36,7 @@ corec57d_init(struct nv50_core *core)
 			evo_data(push, 0x0000000f);
 			evo_data(push, 0x00000000);
 			evo_mthd(push, 0x1010 + (i * 0x080), 1);
-			evo_data(push, 0x00117fff);
+			evo_data(push, 0x00127fff);
 		}
 		evo_mthd(push, 0x0200, 1);
 		evo_data(push, 0x00000001);

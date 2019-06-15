@@ -152,13 +152,12 @@ headc57d_olut_load(struct drm_color_lut *in, int size, void __iomem *mem)
 }
 
 void
-headc57d_olut(struct nv50_head *head, struct nv50_head_atom *asyh)
+headc57d_olut(struct nv50_head *head, struct nv50_head_atom *asyh, int size)
 {
 	asyh->olut.mode = 2; /* DIRECT10 */
 	asyh->olut.size = 4 /* VSS header. */ + 1024 + 1 /* Entries. */;
 	asyh->olut.output_mode = 1; /* INTERPOLATE_ENABLE. */
-	if (asyh->state.gamma_lut &&
-	    asyh->state.gamma_lut->length / sizeof(struct drm_color_lut) == 256)
+	if (size == 256)
 		asyh->olut.load = headc57d_olut_load_8;
 	else
 		asyh->olut.load = headc57d_olut_load;
@@ -183,7 +182,7 @@ headc57d_mode(struct nv50_head *head, struct nv50_head_atom *asyh)
 		evo_data(push, m->clock * 1000);
 		/*XXX: HEAD_USAGE_BOUNDS, doesn't belong here. */
 		evo_mthd(push, 0x2030 + (head->base.index * 0x400), 1);
-		evo_data(push, 0x00001014);
+		evo_data(push, 0x00001024);
 		evo_kick(push, core);
 	}
 }
@@ -196,6 +195,8 @@ headc57d = {
 	.olut_identity = true,
 	.olut_set = headc57d_olut_set,
 	.olut_clr = headc57d_olut_clr,
+	.lut_size = 1024,
+	.lut_chk = head907d_lut_chk,
 	.curs_layout = head917d_curs_layout,
 	.curs_format = headc37d_curs_format,
 	.curs_set = headc37d_curs_set,

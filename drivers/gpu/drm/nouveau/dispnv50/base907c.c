@@ -76,9 +76,9 @@ base907c_xlut_set(struct nv50_wndw *wndw, struct nv50_wndw_atom *asyw)
 }
 
 static void
-base907c_ilut(struct nv50_wndw *wndw, struct nv50_wndw_atom *asyw)
+base907c_ilut(struct nv50_wndw *wndw, struct nv50_wndw_atom *asyw, int size)
 {
-	asyw->xlut.i.mode = 7;
+	asyw->xlut.i.mode = size == 1024 ? 4 : 7;
 	asyw->xlut.i.enable = 2;
 	asyw->xlut.i.load = head907d_olut_load;
 }

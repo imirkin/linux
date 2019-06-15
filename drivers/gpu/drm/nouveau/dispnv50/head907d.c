@@ -231,10 +231,16 @@ head907d_olut_load(struct drm_color_lut *in, int size, void __iomem *mem)
 }
 
 void
-head907d_olut(struct nv50_head *head, struct nv50_head_atom *asyh)
+head907d_olut(struct nv50_head *head, struct nv50_head_atom *asyh, int size)
 {
-	asyh->olut.mode = 7;
+	asyh->olut.mode = size == 1024 ? 4 : 7;
 	asyh->olut.load = head907d_olut_load;
+}
+
+bool
+head907d_lut_chk(int size)
+{
+	return size == 0 || size == 256 || size == 1024;
 }
 
 void
@@ -287,6 +293,8 @@ head907d = {
 	.olut = head907d_olut,
 	.olut_set = head907d_olut_set,
 	.olut_clr = head907d_olut_clr,
+	.lut_size = 1024,
+	.lut_chk = head907d_lut_chk,
 	.core_calc = head507d_core_calc,
 	.core_set = head907d_core_set,
 	.core_clr = head907d_core_clr,

@@ -55,10 +55,10 @@ wndwc37e_ilut_set(struct nv50_wndw *wndw, struct nv50_wndw_atom *asyw)
 }
 
 static void
-wndwc37e_ilut(struct nv50_wndw *wndw, struct nv50_wndw_atom *asyw)
+wndwc37e_ilut(struct nv50_wndw *wndw, struct nv50_wndw_atom *asyw, int size)
 {
 	asyw->xlut.i.mode = 2;
-	asyw->xlut.i.size = 0;
+	asyw->xlut.i.size = size == 1024 ? 2 : 0;
 	asyw->xlut.i.range = 0;
 	asyw->xlut.i.output_mode = 1;
 	asyw->xlut.i.load = head907d_olut_load;

@@ -149,10 +149,10 @@ headc37d_olut_set(struct nv50_head *head, struct nv50_head_atom *asyh)
 }
 
 static void
-headc37d_olut(struct nv50_head *head, struct nv50_head_atom *asyh)
+headc37d_olut(struct nv50_head *head, struct nv50_head_atom *asyh, int size)
 {
 	asyh->olut.mode = 2;
-	asyh->olut.size = 0;
+	asyh->olut.size = size == 1024 ? 2 : 0;
 	asyh->olut.range = 0;
 	asyh->olut.output_mode = 1;
 	asyh->olut.load = head907d_olut_load;
@@ -203,6 +203,8 @@ headc37d = {
 	.olut = headc37d_olut,
 	.olut_set = headc37d_olut_set,
 	.olut_clr = headc37d_olut_clr,
+	.lut_size = 1024,
+	.lut_chk = head907d_lut_chk,
 	.curs_layout = head917d_curs_layout,
 	.curs_format = headc37d_curs_format,
 	.curs_set = headc37d_curs_set,

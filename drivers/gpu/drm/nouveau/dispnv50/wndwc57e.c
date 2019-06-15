@@ -91,9 +91,8 @@ wndwc57e_ilut_load(struct drm_color_lut *in, int size, void __iomem *mem)
 }
 
 static void
-wndwc57e_ilut(struct nv50_wndw *wndw, struct nv50_wndw_atom *asyw)
+wndwc57e_ilut(struct nv50_wndw *wndw, struct nv50_wndw_atom *asyw, int size)
 {
-	u16 size = asyw->ilut->length / sizeof(struct drm_color_lut);
 	if (size == 256) {
 		asyw->xlut.i.mode = 1; /* DIRECT8. */
 	} else {

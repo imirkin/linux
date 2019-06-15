@@ -193,7 +193,23 @@ nv50_head_atomic_check_lut(struct nv50_head *head,
 			   struct nv50_head_atom *asyh)
 {
 	struct nv50_disp *disp = nv50_disp(head->base.base.dev);
+	struct drm_property_blob *ilut = asyh->state.degamma_lut;
 	struct drm_property_blob *olut = asyh->state.gamma_lut;
+	int ilut_size = ilut ? drm_color_lut_size(ilut) : 0;
+	int olut_size = olut ? drm_color_lut_size(olut) : 0;
+
+	if (!head->func->lut_chk(ilut_size)) {
+		DRM_DEBUG_KMS("Invalid DEGAMMA_LUT size: %d\n", ilut_size);
+		return -EINVAL;
+	}
+	if (!head->func->lut_chk(olut_size)) {
+		DRM_DEBUG_KMS("Invalid GAMMA_LUT size: %d\n", olut_size);
+		return -EINVAL;
+	}
+	if (ilut && olut && ilut_size != olut_size) {
+		DRM_DEBUG_KMS("DEGAMMA_LUT size (%d) must match GAMMA_LUT size (%d)\n",
+			      ilut_size, olut_size);
+	}
 
 	/* Determine whether core output LUT should be enabled. */
 	if (olut) {
@@ -217,7 +233,7 @@ nv50_head_atomic_check_lut(struct nv50_head *head,
 
 	asyh->olut.handle = disp->core->chan.vram.handle;
 	asyh->olut.buffer = !asyh->olut.buffer;
-	head->func->olut(head, asyh);
+	head->func->olut(head, asyh, olut_size);
 	return 0;
 }
 
@@ -491,12 +507,14 @@ nv50_head_create(struct drm_device *dev, int index)
 	drm_crtc_init_with_planes(dev, crtc, &wndw->plane, &curs->plane,
 				  &nv50_head_func, "head-%d", head->base.index);
 	drm_crtc_helper_add(crtc, &nv50_head_help);
-	drm_mode_crtc_set_gamma_size(crtc, 256);
+	drm_mode_crtc_set_gamma_size(crtc, head->func->lut_size);
 	if (disp->disp->object.oclass >= GF110_DISP &&
 	    disp->disp->object.oclass < GV100_DISP)
-		drm_crtc_enable_color_mgmt(crtc, 256, true, 256);
+		drm_crtc_enable_color_mgmt(crtc, head->func->lut_size, true,
+					   head->func->lut_size);
 	else
-		drm_crtc_enable_color_mgmt(crtc, 0, false, 256);
+		drm_crtc_enable_color_mgmt(crtc, 0, false,
+					   head->func->lut_size);
 
 	if (head->func->olut_set) {
 		ret = nv50_lut_init(disp, &drm->client.mmu, &head->olut);
