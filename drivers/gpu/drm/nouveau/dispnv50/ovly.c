@@ -53,5 +53,12 @@ nv50_ovly_new(struct nouveau_drm *drm, int head, struct nv50_wndw **pwndw)
 	if (ret)
 		return ret;
 
+	drm_plane_create_color_properties(&(*pwndw)->plane,
+					  BIT(DRM_COLOR_YCBCR_BT601) |
+					  BIT(DRM_COLOR_YCBCR_BT709),
+					  BIT(DRM_COLOR_YCBCR_LIMITED_RANGE),
+					  DRM_COLOR_YCBCR_BT709,
+					  DRM_COLOR_YCBCR_LIMITED_RANGE);
+
 	return nv50_oimm_init(drm, *pwndw);
 }

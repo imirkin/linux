@@ -196,7 +196,23 @@ nv50_wndw_atomic_check_acquire_yuv(struct nv50_wndw_atom *asyw)
 		WARN_ON(1);
 		return -EINVAL;
 	}
-	asyw->image.colorspace = 1;
+
+	switch (asyw->state.color_encoding) {
+	case DRM_COLOR_YCBCR_BT601 : asyw->image.colorspace = 1; break;
+	case DRM_COLOR_YCBCR_BT709 : asyw->image.colorspace = 2; break;
+	case DRM_COLOR_YCBCR_BT2020: asyw->image.colorspace = 3; break;
+	default:
+		WARN_ON(1);
+		return -EINVAL;
+	}
+
+	switch (asyw->state.color_range) {
+	case DRM_COLOR_YCBCR_LIMITED_RANGE: asyw->image.range = 1; break;
+	case DRM_COLOR_YCBCR_FULL_RANGE   : asyw->image.range = 2; break;
+	default:
+		WARN_ON(1);
+		return -EINVAL;
+	}
 	return 0;
 }
 
@@ -222,6 +238,7 @@ nv50_wndw_atomic_check_acquire_rgb(struct nv50_wndw_atom *asyw)
 		return -EINVAL;
 	}
 	asyw->image.colorspace = 0;
+	asyw->image.range = 0;
 	return 0;
 }
 
@@ -661,6 +678,15 @@ nv50_wndw_new(struct nouveau_drm *drm, enum drm_plane_type type, int index,
 	ret = wndws[cid].new(drm, type, index, wndws[cid].oclass, pwndw);
 	if (ret)
 		return ret;
+
+	drm_plane_create_color_properties(&(*pwndw)->plane,
+					  BIT(DRM_COLOR_YCBCR_BT601) |
+					  BIT(DRM_COLOR_YCBCR_BT709) |
+					  BIT(DRM_COLOR_YCBCR_BT2020),
+					  BIT(DRM_COLOR_YCBCR_LIMITED_RANGE) |
+					  BIT(DRM_COLOR_YCBCR_FULL_RANGE),
+					  DRM_COLOR_YCBCR_BT709,
+					  DRM_COLOR_YCBCR_LIMITED_RANGE);
 
 	return nv50_wimm_init(drm, *pwndw);
 }

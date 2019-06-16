@@ -194,6 +194,7 @@ struct nv50_wndw_atom {
 		u8  interval:4;
 
 		u8  colorspace:2;
+		u8  range:2;
 		u8  format;
 		u8  kind:7;
 		u8  layout:1;

@@ -90,7 +90,9 @@ wndwc37e_image_set(struct nv50_wndw *wndw, struct nv50_wndw_atom *asyw)
 	evo_mthd(push, 0x0224, 4);
 	evo_data(push, asyw->image.h << 16 | asyw->image.w);
 	evo_data(push, asyw->image.layout << 4 | asyw->image.blockh);
-	evo_data(push, asyw->image.colorspace << 8 | asyw->image.format);
+	evo_data(push, asyw->image.range << 12 |
+		       asyw->image.colorspace << 8 |
+		       asyw->image.format);
 	evo_data(push, asyw->image.blocks[0] | (asyw->image.pitch[0] >> 6));
 	evo_mthd(push, 0x0240, 1);
 	evo_data(push, asyw->image.handle[0]);
