@@ -25,7 +25,8 @@
 
 void
 gk104_hdmi_ctrl(struct nvkm_ior *ior, int head, bool enable, u8 max_ac_packet,
-		u8 rekey, u8 *avi, u8 avi_size, u8 *vendor, u8 vendor_size)
+		u8 rekey, u8 *avi, u8 avi_size, u8 *vendor, u8 vendor_size,
+		u8 *drm, u8 drm_size)
 {
 	struct nvkm_device *device = ior->disp->engine.subdev.device;
 	const u32 ctrl = 0x40000000 * enable |
@@ -35,9 +36,12 @@ gk104_hdmi_ctrl(struct nvkm_ior *ior, int head, bool enable, u8 max_ac_packet,
 	const u32 hdmi = head * 0x400;
 	struct packed_hdmi_infoframe avi_infoframe;
 	struct packed_hdmi_infoframe vendor_infoframe;
+	struct packed_hdmi_infoframe drm_infoframe;
+	int i;
 
 	pack_hdmi_infoframe(&avi_infoframe, avi, avi_size);
 	pack_hdmi_infoframe(&vendor_infoframe, vendor, vendor_size);
+	pack_hdmi_infoframe(&drm_infoframe, drm, drm_size);
 
 	if (!(ctrl & 0x40000000)) {
 		nvkm_mask(device, 0x616798 + hoff, 0x40000000, 0x00000000);
@@ -50,26 +54,32 @@ gk104_hdmi_ctrl(struct nvkm_ior *ior, int head, bool enable, u8 max_ac_packet,
 	/* AVI InfoFrame */
 	nvkm_mask(device, 0x690000 + hdmi, 0x00000001, 0x00000000);
 	if (avi_size) {
-		nvkm_wr32(device, 0x690008 + hdmi, avi_infoframe.header);
-		nvkm_wr32(device, 0x69000c + hdmi, avi_infoframe.subpack0_low);
-		nvkm_wr32(device, 0x690010 + hdmi, avi_infoframe.subpack0_high);
-		nvkm_wr32(device, 0x690014 + hdmi, avi_infoframe.subpack1_low);
-		nvkm_wr32(device, 0x690018 + hdmi, avi_infoframe.subpack1_high);
+		for (i = 0; i < 5; i++)
+			nvkm_wr32(device, 0x690008 + hdmi + i * 4,
+				  avi_infoframe.data[i]);
 		nvkm_mask(device, 0x690000 + hdmi, 0x00000001, 0x00000001);
 	}
 
-	/* GENERIC(?) / Vendor InfoFrame? */
+	/* GENERIC InfoFrame */
+	nvkm_mask(device, 0x690040 + hdmi, 0x00010001, 0x00000000);
+	if (drm_size) {
+		for (i = 0; i < 5; i++)
+			nvkm_wr32(device, 0x690048 + hdmi + i * 4,
+				  drm_infoframe.data[i]);
+		nvkm_mask(device, 0x690040 + hdmi, 0x00000001, 0x00000001);
+	}
+
+	/* Vendor InfoFrame */
 	nvkm_mask(device, 0x690100 + hdmi, 0x00010001, 0x00000000);
 	if (vendor_size) {
-		nvkm_wr32(device, 0x690108 + hdmi, vendor_infoframe.header);
-		nvkm_wr32(device, 0x69010c + hdmi, vendor_infoframe.subpack0_low);
-		nvkm_wr32(device, 0x690110 + hdmi, vendor_infoframe.subpack0_high);
-		/* Is there a second (or further?) set of subpack registers here? */
+		for (i = 0; i < 5; i++)
+			nvkm_wr32(device, 0x690108 + hdmi + i * 4,
+				  vendor_infoframe.data[i]);
 		nvkm_mask(device, 0x690100 + hdmi, 0x00000001, 0x00000001);
 	}
 
 
-	/* ??? InfoFrame? */
+	/* GCP InfoFrame */
 	nvkm_mask(device, 0x6900c0 + hdmi, 0x00000001, 0x00000000);
 	nvkm_wr32(device, 0x6900cc + hdmi, 0x00000010);
 	nvkm_mask(device, 0x6900c0 + hdmi, 0x00000001, 0x00000001);

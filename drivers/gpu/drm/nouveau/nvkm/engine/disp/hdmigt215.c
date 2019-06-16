@@ -25,7 +25,8 @@
 
 void
 gt215_hdmi_ctrl(struct nvkm_ior *ior, int head, bool enable, u8 max_ac_packet,
-		u8 rekey, u8 *avi, u8 avi_size, u8 *vendor, u8 vendor_size)
+		u8 rekey, u8 *avi, u8 avi_size, u8 *vendor, u8 vendor_size,
+		u8 *drm, u8 drm_size)
 {
 	struct nvkm_device *device = ior->disp->engine.subdev.device;
 	const u32 ctrl = 0x40000000 * enable |
@@ -35,6 +36,7 @@ gt215_hdmi_ctrl(struct nvkm_ior *ior, int head, bool enable, u8 max_ac_packet,
 	const u32 soff = nv50_ior_base(ior);
 	struct packed_hdmi_infoframe avi_infoframe;
 	struct packed_hdmi_infoframe vendor_infoframe;
+	int i;
 
 	pack_hdmi_infoframe(&avi_infoframe, avi, avi_size);
 	pack_hdmi_infoframe(&vendor_infoframe, vendor, vendor_size);
@@ -50,11 +52,9 @@ gt215_hdmi_ctrl(struct nvkm_ior *ior, int head, bool enable, u8 max_ac_packet,
 	/* AVI InfoFrame */
 	nvkm_mask(device, 0x61c520 + soff, 0x00000001, 0x00000000);
 	if (avi_size) {
-		nvkm_wr32(device, 0x61c528 + soff, avi_infoframe.header);
-		nvkm_wr32(device, 0x61c52c + soff, avi_infoframe.subpack0_low);
-		nvkm_wr32(device, 0x61c530 + soff, avi_infoframe.subpack0_high);
-		nvkm_wr32(device, 0x61c534 + soff, avi_infoframe.subpack1_low);
-		nvkm_wr32(device, 0x61c538 + soff, avi_infoframe.subpack1_high);
+		for (i = 0; i < 5; i++)
+			nvkm_wr32(device, 0x61c528 + soff + i * 4,
+				  avi_infoframe.data[i]);
 		nvkm_mask(device, 0x61c520 + soff, 0x00000001, 0x00000001);
 	}
 
@@ -68,12 +68,9 @@ gt215_hdmi_ctrl(struct nvkm_ior *ior, int head, bool enable, u8 max_ac_packet,
 	/* Vendor InfoFrame */
 	nvkm_mask(device, 0x61c53c + soff, 0x00010001, 0x00010000);
 	if (vendor_size) {
-		nvkm_wr32(device, 0x61c544 + soff, vendor_infoframe.header);
-		nvkm_wr32(device, 0x61c548 + soff, vendor_infoframe.subpack0_low);
-		nvkm_wr32(device, 0x61c54c + soff, vendor_infoframe.subpack0_high);
-		/* Is there a second (or up to fourth?) set of subpack registers here? */
-		/* nvkm_wr32(device, 0x61c550 + soff, vendor_infoframe.subpack1_low); */
-		/* nvkm_wr32(device, 0x61c554 + soff, vendor_infoframe.subpack1_high); */
+		for (i = 0; i < 3; i++)
+			nvkm_wr32(device, 0x61c544 + soff + i * 4,
+				  vendor_infoframe.data[i]);
 		nvkm_mask(device, 0x61c53c + soff, 0x00010001, 0x00010001);
 	}
 

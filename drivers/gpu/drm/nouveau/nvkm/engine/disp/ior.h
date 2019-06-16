@@ -65,7 +65,7 @@ struct nvkm_ior_func {
 	struct {
 		void (*ctrl)(struct nvkm_ior *, int head, bool enable,
 			     u8 max_ac_packet, u8 rekey, u8 *avi, u8 avi_size,
-			     u8 *vendor, u8 vendor_size);
+			     u8 *vendor, u8 vendor_size, u8 *drm, u8 drm_size);
 		void (*scdc)(struct nvkm_ior *, int head, u8 scdc);
 	} hdmi;
 
@@ -149,11 +149,11 @@ void gv100_sor_dp_audio(struct nvkm_ior *, int, bool);
 void gv100_sor_dp_audio_sym(struct nvkm_ior *, int, u16, u32);
 void gv100_sor_dp_watermark(struct nvkm_ior *, int, u8);
 
-void g84_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8);
-void gt215_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8);
-void gf119_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8);
-void gk104_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8);
-void gv100_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8);
+void g84_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8, u8 *, u8);
+void gt215_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8, u8 *, u8);
+void gf119_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8, u8 *, u8);
+void gk104_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8, u8 *, u8);
+void gv100_hdmi_ctrl(struct nvkm_ior *, int, bool, u8, u8, u8 *, u8 , u8 *, u8, u8 *, u8);
 
 void gm200_hdmi_scdc(struct nvkm_ior *, int, u8);
 

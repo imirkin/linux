@@ -4,11 +4,8 @@
 #include "ior.h"
 
 struct packed_hdmi_infoframe {
-	u32 header;
-	u32 subpack0_low;
-	u32 subpack0_high;
-	u32 subpack1_low;
-	u32 subpack1_high;
+	u32 dwords;
+	u32 data[9];
 };
 
 void pack_hdmi_infoframe(struct packed_hdmi_infoframe *packed_frame,
