@@ -557,7 +557,7 @@ nv50_hdmi_enable(struct drm_encoder *encoder, struct drm_display_mode *mode)
 	struct {
 		struct nv50_disp_mthd_v1 base;
 		struct nv50_disp_sor_hdmi_pwr_v0 pwr;
-		u8 infoframes[2 * 17]; /* two frames, up to 17 bytes each */
+		u8 infoframes[3 * 31]; /* up to 31 bytes per infoframe */
 	} args = {
 		.base.version = 1,
 		.base.method = NV50_DISP_MTHD_V1_SOR_HDMI_PWR,
@@ -573,6 +573,7 @@ nv50_hdmi_enable(struct drm_encoder *encoder, struct drm_display_mode *mode)
 	u32 max_ac_packet;
 	union hdmi_infoframe avi_frame;
 	union hdmi_infoframe vendor_frame;
+	union hdmi_infoframe drm_frame;
 	bool high_tmds_clock_ratio = false, scrambling = false;
 	u8 config;
 	int ret;
@@ -592,7 +593,7 @@ nv50_hdmi_enable(struct drm_encoder *encoder, struct drm_display_mode *mode)
 	if (!ret) {
 		/* We have an AVI InfoFrame, populate it to the display */
 		args.pwr.avi_infoframe_length
-			= hdmi_infoframe_pack(&avi_frame, args.infoframes, 17);
+			= hdmi_infoframe_pack(&avi_frame, args.infoframes, 31);
 	}
 
 	ret = drm_hdmi_vendor_infoframe_from_display_mode(&vendor_frame.vendor.hdmi,
@@ -603,7 +604,18 @@ nv50_hdmi_enable(struct drm_encoder *encoder, struct drm_display_mode *mode)
 			= hdmi_infoframe_pack(&vendor_frame,
 					      args.infoframes
 					      + args.pwr.avi_infoframe_length,
-					      17);
+					      31);
+	}
+
+	ret = drm_hdmi_infoframe_set_hdr_metadata(&drm_frame.drm, conn_state);
+	if (!ret) {
+		/* We have a Vendor InfoFrame, populate it to the display */
+		args.pwr.drm_infoframe_length
+			= hdmi_infoframe_pack(&drm_frame,
+					      args.infoframes
+					      + args.pwr.avi_infoframe_length
+					      + args.pwr.vendor_infoframe_length,
+					      31);
 	}
 
 	max_ac_packet  = mode->htotal - mode->hdisplay;
@@ -2147,6 +2159,35 @@ nv50_disp_outp_atomic_check_set(struct nv50_atom *atom,
 	return 0;
 }
 
+/* TODO: make common? amdgpu also does this. */
+static int
+nv50_disp_outp_atomic_check_hdr(struct drm_atomic_state *state,
+				struct drm_connector_state *old_conn_state,
+				struct drm_connector_state *new_conn_state)
+{
+       struct drm_property_blob *old_blob = old_conn_state->hdr_output_metadata;
+       struct drm_property_blob *new_blob = new_conn_state->hdr_output_metadata;
+       bool changed = false;
+
+       if (old_blob != new_blob) {
+	       if (old_blob && new_blob && old_blob->length == new_blob->length)
+		       changed = memcmp(old_blob->data, new_blob->data,
+					old_blob->length);
+	       else
+		       changed = true;
+       }
+
+       if (changed && new_conn_state->crtc) {
+	       struct drm_crtc_state *new_crtc_state =
+		       drm_atomic_get_crtc_state(state, new_conn_state->crtc);
+	       if (IS_ERR(new_crtc_state))
+		       return PTR_ERR(new_crtc_state);
+	       new_crtc_state->mode_changed = true;
+       }
+
+       return 0;
+}
+
 static int
 nv50_disp_atomic_check(struct drm_device *dev, struct drm_atomic_state *state)
 {
@@ -2171,6 +2212,10 @@ nv50_disp_atomic_check(struct drm_device *dev, struct drm_atomic_state *state)
 		return ret;
 
 	for_each_oldnew_connector_in_state(state, connector, old_connector_state, new_connector_state, i) {
+		ret = nv50_disp_outp_atomic_check_hdr(state, old_connector_state, new_connector_state);
+		if (ret)
+			return ret;
+
 		ret = nv50_disp_outp_atomic_check_clr(atom, old_connector_state);
 		if (ret)
 			return ret;

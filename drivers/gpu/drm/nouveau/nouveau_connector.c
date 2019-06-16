@@ -356,6 +356,10 @@ nouveau_conn_attach_properties(struct drm_connector *connector)
 		if (!drm_mode_create_colorspace_property(connector))
 			drm_object_attach_property(&connector->base,
 						   connector->colorspace_property, 0);
+
+		drm_object_attach_property(&connector->base,
+					   dev->mode_config.
+					   hdr_output_metadata_property, 0);
 	}
 }
 
