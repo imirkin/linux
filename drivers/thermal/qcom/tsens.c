@@ -142,6 +142,8 @@ static int tsens_probe(struct platform_device *pdev)
 	const struct of_device_id *id;
 	u32 num_sensors;
 
+        return -ENODEV;
+
 	if (pdev->dev.of_node)
 		dev = &pdev->dev;
 	else
